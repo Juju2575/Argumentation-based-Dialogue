@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-from ArguingAgent import ArguingAgent
-from ArguingModel import ArguingModel
+from ArgumentAgent import ArgumentAgent
+from ArgumentModel import ArgumentModel
 from communication.mailbox.Mailbox import Mailbox
 from communication.preferences import Item
 
 if __name__ == "__main__":
     # Init the model and the agents
-    arguing_model = ArguingModel()
+    arguing_model = ArgumentModel()
 
-    A1 = ArguingAgent(0, arguing_model, "Agent1")
-    A2 = ArguingAgent(1, arguing_model, "Agent2")
+    A1 = ArgumentAgent(0, arguing_model, "Agent1")
+    A2 = ArgumentAgent(1, arguing_model, "Agent2")
 
 
     arguing_model.schedule.add(A1)

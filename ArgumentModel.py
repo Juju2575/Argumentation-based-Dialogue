@@ -9,13 +9,12 @@ from communication.message.Message import Message
 from communication.message.MessagePerformative import MessagePerformative
 from communication.message.MessageService import MessageService
 
+class ArgumentModel(Model):
+    def __init__(self):
+        self.schedule = RandomActivation(self) #A modifier
+        self.__messages_service = MessageService(self.schedule)
+        self.running = True
 
-class ArguingAgent(CommunicatingAgent):
-    def __init__(self, unique_id, model, name):
-        super().__init__(unique_id, model, name)
-
-        #Define preferences
-    
     def step(self):
-        super().step()
-        
+        self.__messages_service.dispatch_messages()
+        self.schedule.step()
