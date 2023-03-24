@@ -3,6 +3,7 @@
 from ArguingAgent import ArguingAgent
 from ArguingModel import ArguingModel
 from communication.mailbox.Mailbox import Mailbox
+from communication.preferences import Item
 
 if __name__ == "__main__":
     # Init the model and the agents
@@ -15,12 +16,16 @@ if __name__ == "__main__":
     arguing_model.schedule.add(A1)
     arguing_model.schedule.add(A2)
 
-    # Launch the Communication part 
+    E = Item("E", "Electric Engine")
+    ICED = Item("ICED", "Diesel Engine")
 
+    # Launch the Communication part 
     mailbox_agent1 = Mailbox()
     mailbox_agent2 = Mailbox()
     
-    step = 0
-    while step < 10: ## CHANGER CONDITION DE TERMINAISON
-        arguing_model.step()
-        step += 1
+    E.get_name()
+
+    # step = 0
+    # while step < 10: ## CHANGER CONDITION DE TERMINAISON
+    #     arguing_model.step()
+    #     step += 1

@@ -13,3 +13,9 @@ from communication.message.MessageService import MessageService
 class ArguingAgent(CommunicatingAgent):
     def __init__(self, unique_id, model, name):
         super().__init__(unique_id, model, name)
+
+        #Define preferences
+    
+    def step(self):
+        super().step()
+        
