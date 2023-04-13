@@ -88,9 +88,9 @@ class Preferences:
         :return: a boolean, True means that the item is among the favourite ones
         """
         N = len(item_list)
-        N_top = math.floor(N * 0.1)
+        N_top = math.ceil(N * 0.1)
 
-        whole_list = item_list
+        whole_list = item_list.copy()
         top_list = []
 
         for i in range(N_top):
@@ -100,6 +100,7 @@ class Preferences:
 
         is_top_item = (item in top_list)
 
+        # is_top_item = True
         return is_top_item
 
 

@@ -24,6 +24,7 @@ class ArgumentAgent( CommunicatingAgent ) :
         self.preference = preferences
         self.interlocuteur_id = (self.unique_id + 1) % 2
         self.item_list = item_list
+        self.argumentation = True
 
     def get_preference( self ):
         return self.preference
@@ -61,27 +62,50 @@ class ArgumentAgent( CommunicatingAgent ) :
         reponses_propose = self.get_messages_from_performative(MessagePerformative.PROPOSE)
         reponses_accept = self.get_messages_from_performative(MessagePerformative.ACCEPT)
         reponses_ask_why = self.get_messages_from_performative(MessagePerformative.ASK_WHY)
+        reponses_commit = self.get_messages_from_performative(MessagePerformative.COMMIT)
+        reponses_argue = self.get_messages_from_performative(MessagePerformative.ARGUE)
 
-        if len(reponses_accept) > 0:
-            # SILENCE
-            print(self.interlocuteur.get_name(), ": ACCEPT(", reponses_accept[0].get_content(),")")
-        elif len(reponses_propose) > 0:
-            for message in reponses_propose:
-                item = message.get_content() #on prend la dernière valeur?
-            print(self.interlocuteur.get_name(), ": PROPOSE(", item,")")
-            if self.preference.is_item_among_top_10_percent(item, self.item_list):
-                #ACCEPT
-                self.send(self.interlocuteur_id, 102, item)
+        if self.argumentation : 
+            if len(reponses_commit) > 0:
+                for message in reponses_commit:
+                    item = message.get_content() 
+                print(self.interlocuteur.get_name(), ": COMMIT(", item,")")
+                self.send(self.interlocuteur_id, 103, preferred_item)
+                self.argumentation = False
+            
+            elif len(reponses_accept) > 0:
+                # COMMIT
+                print(self.interlocuteur.get_name(), ": ACCEPT(", reponses_accept[0].get_content(),")")
+                self.send(self.interlocuteur_id, 103, preferred_item)
+
+            elif len(reponses_argue) > 0:
+                for message in reponses_argue:
+                    item = message.get_content() 
+                print(self.interlocuteur.get_name(), ": ARGUE(", item,")")
+
+            elif len(reponses_ask_why) > 0:
+                #ARGUE
+                for message in reponses_ask_why:
+                    item = message.get_content() 
+                print(self.interlocuteur.get_name(), ": ASK WHY(", item,")")
+                self.send(self.interlocuteur_id, 105, "")
+
+            elif len(reponses_propose) > 0:
+                for message in reponses_propose:
+                    item = message.get_content() #on prend la dernière valeur?
+                print(self.interlocuteur.get_name(), ": PROPOSE(", item,")")
+
+                if self.preference.is_item_among_top_10_percent(item, self.item_list):
+                    #ACCEPT
+                    self.send(self.interlocuteur_id, 102, item)
+                    preferred_item = item #On remplace l'objet préféré après l'avoir accepté
+                else:
+                    #ASK WHY
+                    self.send(self.interlocuteur_id, 104, item)
+
             else:
-                #ASK WHY
-                self.send(self.interlocuteur_id, 104, item)
-        elif len(reponses_ask_why) > 0:
-            for message in reponses_ask_why:
-                item = message.get_content() 
-            print(self.interlocuteur.get_name(), ": ASK WHY(", item,")")
-        else:
-            # PROPOSE
-            self.send(self.interlocuteur_id, 101, preferred_item)
+                # PROPOSE
+                self.send(self.interlocuteur_id, 101, preferred_item)
 
 
 class ArgumentModel( Model ) :
