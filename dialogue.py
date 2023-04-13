@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
-
 from ArgumentAgent import ArgumentAgent
 from ArgumentModel import ArgumentModel
+
 from communication.mailbox.Mailbox import Mailbox
-from communication.preferences import Item
+from communication.preferences.Item import Item
 
 if __name__ == "__main__":
     # Init the model and the agents
@@ -23,7 +22,7 @@ if __name__ == "__main__":
     mailbox_agent1 = Mailbox()
     mailbox_agent2 = Mailbox()
     
-    E.get_name()
+    print(E.get_name())
 
     # step = 0
     # while step < 10: ## CHANGER CONDITION DE TERMINAISON
