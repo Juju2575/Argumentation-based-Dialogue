@@ -158,11 +158,3 @@ if __name__ == "__main__":
     while step < 10: ## CHANGER CONDITION DE TERMINAISON
         argument_model.step()
         step += 1
-
-
-    #Sending Messages (debug)
-    # A1.send(A1.interlocuteur_id, MessagePerformative(101), "ICED")
-    # my_id = 0
-    # print(argument_model.schedule._agents)
-    # my_agent = argument_model.schedule._agents[my_id]
-    # print(my_agent.get_name())
