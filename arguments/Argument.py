@@ -33,3 +33,35 @@ class Argument:
         """ Add a premiss couple values in the couple values list .
         """
         self.couple_values_list.append(CoupleValue(criterion_name, value))
+    
+    def List_supporting_proposal ( self , item , preferences ) :
+        """ Generate a list of premisses which can be used to support an item
+            param item : Item - name of the item
+            return : list of all premisses PRO an item ( sorted by order of importance based on agent ’s preferences )
+        """
+        supporting_proposal = []
+
+        for criterion_name in preferences.__criterion_name_list:
+            crit_value = item.get_value(preferences, criterion_name)
+            if (crit_value == 4):
+                supporting_proposal.insert(0, CoupleValue(criterion_name, crit_value))
+            if (crit_value == 3):
+                supporting_proposal.append(CoupleValue(criterion_name, crit_value))
+            
+        return supporting_proposal
+    
+    def List_attacking_proposal ( self , item , preferences ) :
+        """  Generate a list of premisses which can be used to attack an item
+            param item : Item - name of the item
+            return : list of all premisses CON an item ( sorted by order of importance based on agent ’s preferences )
+        """
+        attacking_proposal = []
+
+        for criterion_name in preferences.__criterion_name_list:
+            crit_value = item.get_value(preferences, criterion_name)
+            if (crit_value == 1):
+                attacking_proposal.insert(0, CoupleValue(criterion_name, crit_value))
+            if (crit_value == 0):
+                attacking_proposal.append(CoupleValue(criterion_name, crit_value))
+            
+        return attacking_proposal
