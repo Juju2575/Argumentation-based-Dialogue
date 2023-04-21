@@ -24,6 +24,8 @@ class Argument:
         self.comparison_list = []
         self.couple_values_list = []
 
+
+
     def add_premiss_comparison(self, criterion_name_1, criterion_name_2):
         """ Adds a premiss comparison in the comparison list .
         """
@@ -40,32 +42,55 @@ class Argument:
             param item : Item - name of the item
             return : list of all premisses PRO an item ( sorted by order of importance based on agent ’s preferences )
         """
-        supporting_proposal = []
+        very_good_proposal = []
+        good_proposal = []
         
         crit_name_list = preferences.get_criterion_name_list()
         for criterion_name in crit_name_list:
             crit_value = item.get_value(preferences, criterion_name)
+
+            #Liste des critères notés VERY GOOD
             if (crit_value == Value(4)):
-                supporting_proposal.insert(0, CoupleValue(criterion_name, crit_value))
+                very_good_proposal.insert(0, CoupleValue(criterion_name, crit_value))
+                if len(very_good_proposal) > 1:
+                    if preferences.is_preferred_criterion(very_good_proposal[1].criterion_name, very_good_proposal[0].criterion_name):
+                        very_good_proposal[0], very_good_proposal[1] = very_good_proposal[1], very_good_proposal[0]
+
+            #Liste des critères notés GOOD
             if (crit_value == Value(3)):
-                supporting_proposal.append(CoupleValue(criterion_name, crit_value))
+                good_proposal.insert(0, CoupleValue(criterion_name, crit_value))
+                if len(good_proposal) > 1:
+                    if preferences.is_preferred_criterion(good_proposal[1].criterion_name, good_proposal[0].criterion_name):
+                        good_proposal[0], good_proposal[1] = good_proposal[1], good_proposal[0]
+
+        
             
-        return supporting_proposal
+        return very_good_proposal + good_proposal
     
     def List_attacking_proposal ( self , item , preferences ) :
         """  Generate a list of premisses which can be used to attack an item
             param item : Item - name of the item
             return : list of all premisses CON an item ( sorted by order of importance based on agent ’s preferences )
         """
-        attacking_proposal = []
-
+        very_bad_proposal = []
+        bad_proposal = []
+        
         crit_name_list = preferences.get_criterion_name_list()
-
         for criterion_name in crit_name_list:
             crit_value = item.get_value(preferences, criterion_name)
+
+            #Liste des critères notés VERY GOOD
             if (crit_value == Value(1)):
-                attacking_proposal.insert(0, CoupleValue(criterion_name, crit_value))
-            if (crit_value == Value(0)):
-                attacking_proposal.append(CoupleValue(criterion_name, crit_value))
+                very_bad_proposal.insert(0, CoupleValue(criterion_name, crit_value))
+                if len(very_bad_proposal) > 1:
+                    if preferences.is_preferred_criterion(very_bad_proposal[1].criterion_name, very_bad_proposal[0].criterion_name):
+                        very_bad_proposal[0], very_bad_proposal[1] = very_bad_proposal[1], very_bad_proposal[0]
+
+            #Liste des critères notés GOOD
+            if (crit_value == Value(2)):
+                bad_proposal.insert(0, CoupleValue(criterion_name, crit_value))
+                if len(bad_proposal) > 1:
+                    if preferences.is_preferred_criterion(bad_proposal[1].criterion_name, bad_proposal[0].criterion_name):
+                        bad_proposal[0], bad_proposal[1] = bad_proposal[1], bad_proposal[0]
             
-        return attacking_proposal
+        return very_bad_proposal + bad_proposal

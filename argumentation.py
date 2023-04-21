@@ -31,6 +31,8 @@ class ArgumentAgent( CommunicatingAgent ) :
         self.item_list = item_list
         self.argumentation = True
         self.has_proposed_preferred = False
+        self.preferred_item = None
+        self.other_item = None
 
     def get_preference( self ):
         return self.preference
@@ -131,7 +133,7 @@ class ArgumentAgent( CommunicatingAgent ) :
 
         self.interlocuteur = self.model.schedule._agents[self.interlocuteur_id]
 
-        preferred_item = self.preference.most_preferred(self.item_list)
+        self.preferred_item = self.preference.most_preferred(self.item_list)
         
         reponses_propose = self.get_new_messages_from_performative(MessagePerformative.PROPOSE)
         reponses_accept = self.get_new_messages_from_performative(MessagePerformative.ACCEPT)
@@ -151,13 +153,13 @@ class ArgumentAgent( CommunicatingAgent ) :
                 for message in reponses_commit:
                     item = message.get_content() 
                 print(self.interlocuteur.get_name(), ": COMMIT(", item,")")
-                self.send(self.interlocuteur_id, 103, preferred_item)
+                self.send(self.interlocuteur_id, 103, self.preferred_item)
                 self.argumentation = False
             
             elif len(reponses_accept) > 0:
                 # COMMIT
                 print(self.interlocuteur.get_name(), ": ACCEPT(", reponses_accept[0].get_content(),")")
-                self.send(self.interlocuteur_id, 103, preferred_item)
+                self.send(self.interlocuteur_id, 103, self.preferred_item)
 
             #COUNTER ARGUE
             elif len(reponses_argue) > 0:
@@ -168,17 +170,21 @@ class ArgumentAgent( CommunicatingAgent ) :
 
                 if not self.has_proposed_preferred:
                     self.has_proposed_preferred=True
-                    self.send(self.interlocuteur_id, 101, preferred_item)
+                    self.send(self.interlocuteur_id, 101, self.preferred_item)
                 
                 else:
                     if "not" in argument:
                         item, _, _ = self.argument_parsing(argument)
                         support_arg = self.support_proposal(item)
                         if support_arg is not None:
+                            #ARGUE PRO
                             self.send(self.interlocuteur_id, 105, support_arg)
                         else: 
+                            #ARGUE CON sur l'autre object
+                            # self.send(self.interlocuteur_id, 102, "I  don't have any supporting argument")
                             self.send(self.interlocuteur_id, 102, "I  don't have any supporting argument")
                     else:
+                        #ARGUE CON
                         if self.can_be_attacked(argument) is not None:
                             item, crit_name, crit_value = self.can_be_attacked(argument)
                             counter_arg = self.attacking_proposal(item, crit_name, crit_value)
@@ -186,7 +192,7 @@ class ArgumentAgent( CommunicatingAgent ) :
 
 
             elif len(reponses_ask_why) > 0:
-                #ARGUE
+                #ARGUE PRO
                 for message in reponses_ask_why:
                     item = message.get_content() 
                 print(self.interlocuteur.get_name(), ": ASK WHY(", item,")")
@@ -204,13 +210,14 @@ class ArgumentAgent( CommunicatingAgent ) :
                     preferred_item = item #On remplace l'objet préféré après l'avoir accepté
                 else:
                     #ASK WHY
+                    self.other_item = item
                     self.send(self.interlocuteur_id, 104, item)
 
 
             else:
                 # PROPOSE
                 self.has_proposed_preferred=True
-                self.send(self.interlocuteur_id, 101, preferred_item)
+                self.send(self.interlocuteur_id, 101, self.preferred_item)
 
 
 class ArgumentModel( Model ) :
