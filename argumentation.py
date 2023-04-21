@@ -1,5 +1,5 @@
 from mesa import Model
-from mesa.time import RandomActivation
+from mesa.time import RandomActivation, BaseScheduler
 
 import pandas as pd
 import csv
@@ -15,6 +15,8 @@ from communication.preferences.Preferences import Preferences
 from communication.preferences.CriterionName import CriterionName
 from communication.preferences.CriterionValue import CriterionValue
 from communication.preferences.Value import Value
+
+from arguments.Argument import Argument
 
 class ArgumentAgent( CommunicatingAgent ) :
     """ ArgumentAgent which inherit from CommunicatingAgent .
@@ -52,6 +54,65 @@ class ArgumentAgent( CommunicatingAgent ) :
         m = Message(self.get_name(), interlocutor.get_name(), MessagePerformative(message_performative), item)
         self.send_message(m)
 
+    def support_proposal( self , item ):
+        """
+        Used when the agent receives " ASK_WHY " after having proposed an item
+        : param item : str - name of the item which was proposed
+        : return : string - the strongest supportive argument
+        """
+
+        support_arg = Argument(boolean_decision=True, item=item)
+        support_arg_list = support_arg.List_supporting_proposal(item, self.preference)
+
+        # print(support_arg_list)
+        best_arg = support_arg_list[0] #Objet CoupleValue
+
+        return (str(item.get_name()) + " <= " + str(best_arg.criterion_name)  + " = " + str(best_arg.value))
+
+
+    def attacking_proposal(self , item, crit_name, crit_value ):
+        """
+        Used when the agent receives " ASK_WHY " after having proposed an item
+        : param item : str - name of the item which was proposed
+        : return : string - the strongest supportive argument
+        """
+
+        return ("not " + str(item) + " <= " + str(crit_name)  + " = " + str(crit_value))
+
+    def argument_parsing(self ,argument ) :
+        argument_list = argument.split(" <= ")
+        premise_list = argument_list[1].split(" = ")
+
+
+        argument_list[0] = argument_list[0].replace("not ", "")
+        argument_list[0] = argument_list[0].split(" ")[0]
+
+        conclusion_item = argument_list[0]
+        premise_criterion_name = premise_list[0]
+        premise_value = premise_list[1]
+
+        arg_item = Item("Placeholder", "")
+
+        for item in self.item_list:
+            if conclusion_item== item.get_name():
+                arg_item = item
+
+        return arg_item, premise_criterion_name, premise_value
+
+    def can_be_attacked(self, argument):
+        arg_item, crit_name, value = self.argument_parsing(argument)        
+
+
+        attacking_arg = Argument(boolean_decision=False, item=arg_item)
+        attacking_arg_list = attacking_arg.List_attacking_proposal(arg_item, self.preference)
+
+        for arg in attacking_arg_list:
+            if self.preference.is_preferred_criterion(arg.criterion_name, crit_name):
+                return arg_item, arg.criterion_name, arg.value
+            else:
+                None 
+
+
     def step(self) :
         super().step()
 
@@ -78,17 +139,27 @@ class ArgumentAgent( CommunicatingAgent ) :
                 print(self.interlocuteur.get_name(), ": ACCEPT(", reponses_accept[0].get_content(),")")
                 self.send(self.interlocuteur_id, 103, preferred_item)
 
+            #COUNTER ARGUE
             elif len(reponses_argue) > 0:
                 for message in reponses_argue:
-                    item = message.get_content() 
-                print(self.interlocuteur.get_name(), ": ARGUE(", item,")")
+                    argument = message.get_content() 
+                print(self.interlocuteur.get_name(), ": ARGUE(", argument,")")
+
+                if "not" in argument:
+                    item, _, _ = self.argument_parsing(argument)
+                    self.send(self.interlocuteur_id, 105, self.support_proposal(item))
+                else:
+                    if self.can_be_attacked(argument) is not None:
+                        item, crit_name, crit_value = self.can_be_attacked(argument)
+                        counter_arg = self.attacking_proposal(item, crit_name, crit_value)
+                        self.send(self.interlocuteur_id, 105, counter_arg)
 
             elif len(reponses_ask_why) > 0:
                 #ARGUE
                 for message in reponses_ask_why:
                     item = message.get_content() 
                 print(self.interlocuteur.get_name(), ": ASK WHY(", item,")")
-                self.send(self.interlocuteur_id, 105, "")
+                self.send(self.interlocuteur_id, 105, self.support_proposal(item))
 
             elif len(reponses_propose) > 0:
                 for message in reponses_propose:
@@ -112,7 +183,7 @@ class ArgumentModel( Model ) :
     """ ArgumentModel which inherit from Model .
     """
     def __init__(self) :
-        self.schedule = RandomActivation(self)
+        self.schedule = BaseScheduler(self)
         self.__messages_service = MessageService(self.schedule)
 
         # To be completed

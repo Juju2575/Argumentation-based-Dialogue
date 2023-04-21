@@ -3,6 +3,7 @@
 from arguments.Comparison import Comparison
 from arguments.CoupleValue import CoupleValue
 
+from communication.preferences.Value import Value
 
 class Argument:
     """ Argument class .
@@ -40,12 +41,13 @@ class Argument:
             return : list of all premisses PRO an item ( sorted by order of importance based on agent ’s preferences )
         """
         supporting_proposal = []
-
-        for criterion_name in preferences.__criterion_name_list:
+        
+        crit_name_list = preferences.get_criterion_name_list()
+        for criterion_name in crit_name_list:
             crit_value = item.get_value(preferences, criterion_name)
-            if (crit_value == 4):
+            if (crit_value == Value(4)):
                 supporting_proposal.insert(0, CoupleValue(criterion_name, crit_value))
-            if (crit_value == 3):
+            if (crit_value == Value(3)):
                 supporting_proposal.append(CoupleValue(criterion_name, crit_value))
             
         return supporting_proposal
@@ -57,11 +59,13 @@ class Argument:
         """
         attacking_proposal = []
 
-        for criterion_name in preferences.__criterion_name_list:
+        crit_name_list = preferences.get_criterion_name_list()
+
+        for criterion_name in crit_name_list:
             crit_value = item.get_value(preferences, criterion_name)
-            if (crit_value == 1):
+            if (crit_value == Value(1)):
                 attacking_proposal.insert(0, CoupleValue(criterion_name, crit_value))
-            if (crit_value == 0):
+            if (crit_value == Value(0)):
                 attacking_proposal.append(CoupleValue(criterion_name, crit_value))
             
         return attacking_proposal
