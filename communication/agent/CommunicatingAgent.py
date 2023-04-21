@@ -65,3 +65,8 @@ class CommunicatingAgent(Agent):
         """ Return a list of messages which have the same sender.
         """
         return self.__mailbox.get_messages_from_exp(exp)
+    
+    def get_new_messages_from_performative(self, performative):
+        """ Return a list of messages which have the same performative.
+        """
+        return self.__mailbox.get_new_messages_from_performative(performative)

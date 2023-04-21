@@ -56,3 +56,16 @@ class Mailbox:
             if message.get_exp() == exp:
                 messages_from_exp.append(message)
         return messages_from_exp
+    
+    def get_new_messages_from_performative(self, performative):
+        """ Return a list of unread messages which have the same performative.
+        """
+        new_messages_from_performative = []
+
+        if len(self.__unread_messages) > 0:
+            for message in self.__unread_messages:
+                if message.get_performative() == performative:
+                    new_messages_from_performative.append(message)
+                    self.__unread_messages.remove(message)
+
+        return new_messages_from_performative
