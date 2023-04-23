@@ -73,7 +73,6 @@ class ArgumentAgent( CommunicatingAgent ) :
         best_arg = None
 
         for arg in support_arg_list:
-            # print((item, str(arg.criterion_name), str(arg.value)))
             if (item, str(arg.criterion_name), str(arg.value)) not in argument_list:
                 best_arg = arg
                 break 
@@ -115,17 +114,31 @@ class ArgumentAgent( CommunicatingAgent ) :
         return arg_item, premise_criterion_name, premise_value
 
     def can_be_attacked(self, argument):
-        arg_item, crit_name, value = self.argument_parsing(argument)        
-
+        # arg_item, crit_name, value = self.argument_parsing(argument)    #Previous version
+        arg_item, crit_name, value = argument
 
         attacking_arg = Argument(boolean_decision=False, item=arg_item)
         attacking_arg_list = attacking_arg.List_attacking_proposal(arg_item, self.preference)
-        
+
         for arg in attacking_arg_list:
             if self.preference.is_preferred_criterion(arg.criterion_name, crit_name):
-                return arg_item, arg.criterion_name, arg.value
+                return arg_item, str(arg.criterion_name), str(arg.value)
             else:
                 None 
+
+    def find_attacking_arg(self, item):
+        #Si cette fonction retourne None alors on ne peut plus trouver d'arguments contre
+        previous_arg_list = argument_list.copy()
+
+        attacking_arg = None
+
+        for previous_arg in previous_arg_list:
+            if item == previous_arg[0]:
+                if self.can_be_attacked(previous_arg) is not None:
+                    if tuple(self.can_be_attacked(previous_arg)) not in argument_list:
+                        attacking_arg = tuple(self.can_be_attacked(previous_arg))
+                        # print(attacking_arg)
+        return attacking_arg      
 
 
     def step(self) :
@@ -153,7 +166,7 @@ class ArgumentAgent( CommunicatingAgent ) :
                 for message in reponses_commit:
                     item = message.get_content() 
                 print(self.interlocuteur.get_name(), ": COMMIT(", item,")")
-                self.send(self.interlocuteur_id, 103, self.preferred_item)
+                self.send(self.interlocuteur_id, 103, item)
                 self.argumentation = False
             
             elif len(reponses_accept) > 0:
@@ -185,10 +198,19 @@ class ArgumentAgent( CommunicatingAgent ) :
                             self.send(self.interlocuteur_id, 102, "I  don't have any supporting argument")
                     else:
                         #ARGUE CON
-                        if self.can_be_attacked(argument) is not None:
-                            item, crit_name, crit_value = self.can_be_attacked(argument)
+                        # if self.can_be_attacked(argument) is not None: #Previous version
+                        #     item, crit_name, crit_value = self.can_be_attacked(argument)
+                        #     counter_arg = self.attacking_proposal(item, crit_name, crit_value)
+                        #     self.send(self.interlocuteur_id, 105, counter_arg)
+                        item, _, _ = self.argument_parsing(argument)
+                        if self.find_attacking_arg(item) is not None:
+                            item, crit_name, crit_value = self.find_attacking_arg(item)
                             counter_arg = self.attacking_proposal(item, crit_name, crit_value)
                             self.send(self.interlocuteur_id, 105, counter_arg)
+                        else:
+                            #ACCEPT
+                            self.send(self.interlocuteur_id, 102, item)
+                            # self.send(self.interlocuteur_id, 102, "I  don't have any attacking argument")
 
 
             elif len(reponses_ask_why) > 0:
